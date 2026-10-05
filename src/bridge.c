@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <lkl.h>
 #include <lkl_host.h>
 
@@ -69,7 +70,24 @@ void blik_run(void) {
         printf("[blik] host filesystem mounted successfully to /\n");
     }
 
-    while (1) {
-        lkl_sys_pause();
+    printf("[blik] spawning initial init process inside lkl...\n");
+
+    char *const argv[] = { "/bin/sh", NULL };
+    char *const envp[] = { "PATH=/bin:/usr/bin:/sbin:/usr/sbin", "TERM=linux", NULL };
+
+    long pid = lkl_sys_clone(LKL_CLONE_VM | LKL_CLONE_FS | LKL_CLONE_FILES | LKL_CLONE_SIGHAND, 0);
+    if (pid == 0) {
+        lkl_sys_execve("/bin/sh", argv, envp);
+        lkl_sys_exit(1);
+    } else if (pid < 0) {
+        fprintf(stderr, "[blik] failed to clone process: %ld\n", pid);
+    } else {
+        printf("[blik] spawned init process with pid: %ld\n", pid);
+        int status;
+        lkl_sys_wait4(pid, &status, 0, NULL);
+        printf("[blik] init process exited with status: %d\n", status);
     }
+
+    printf("[blik] shutting down lkl kernel...\n");
+    lkl_sys_sync();
 }
