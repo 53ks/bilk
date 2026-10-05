@@ -5,16 +5,31 @@
 #include <lkl.h>
 #include <lkl_host.h>
 
-static void *lkl_mem_alloc(size_t size) {
-    return malloc(size);
-}
-
-static void lkl_mem_free(void *ptr) {
-    free(ptr);
-}
-
 int blik_init(const char *config_path) {
-    printf("[blik] parsing configuration from: %s\n", config_path ? config_path : "default");
+    printf("[blik] loading configuration from: %s\n", config_path);
+
+    FILE *f = fopen(config_path, "r");
+    if (!f) {
+        fprintf(stderr, "[blik] failed to open config file: %s\n", config_path);
+        return -1;
+    }
+
+    fseek(f, 0, SEEK_END);
+    long len = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    char *buf = malloc(len + 1);
+    if (!buf) {
+        fclose(f);
+        return -1;
+    }
+
+    fread(buf, 1, len, f);
+    buf[len] = '\0';
+    fclose(f);
+
+    printf("[blik] config loaded (%ld bytes)\n", len);
+    free(buf);
 
     if (lkl_host_mem_init(128 * 1024 * 1024) < 0) {
         fprintf(stderr, "[blik] failed to initialize lkl memory\n");
