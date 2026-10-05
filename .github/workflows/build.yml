@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,15 +21,32 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential git libelf-dev bison flex libssl-dev bc gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
 
-      - name: Clone and Build LKL in lkl-cache
+      - name: Build LKL and update lkl-cache folder
         run: |
           if [ ! -f "lkl-cache/tools/lkl/lib/lkl.o" ]; then
-            echo "Cloning and building LKL in lkl-cache..."
+            echo "Building LKL from scratch..."
+            git clone --depth 1 https://github.com/lkl/linux.git temp_lkl
+            make -C temp_lkl/tools/lkl ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
+            
             rm -rf lkl-cache/*
-            git clone --depth 1 https://github.com/lkl/linux.git lkl-cache
-            make -C lkl-cache/tools/lkl ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
+            mkdir -p lkl-cache/tools
+            mv temp_lkl/tools/lkl lkl-cache/tools/lkl
+            rm -rf temp_lkl
+            echo "LKL built and placed into lkl-cache successfully."
           else
-            echo "LKL build cache already exists, skipping."
+            echo "LKL build cache already exists in lkl-cache, skipping build."
+          fi
+
+      - name: Commit and push lkl-cache to repository
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add lkl-cache/
+          if ! git diff-index --quiet HEAD --; then
+            git commit -m "chore: update lkl-cache with build artifacts [skip ci]"
+            git push
+          else
+            echo "No changes in lkl-cache to commit."
           fi
 
       - name: Build blik for ARM64
