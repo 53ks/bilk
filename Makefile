@@ -14,7 +14,9 @@ OBJS = $(SRCS:.c=.o)
 
 all: $(TARGET)
 
-# LKLのビルド時にクロスコンパイル設定とアーキテクチャを正確に渡す
+# すべてのオブジェクトファイルのコンパイル前に、必ずLKL（liblkl.aおよび自動生成ヘッダー）のビルドを完了させる
+$(OBJS): $(LKL_LIB)
+
 $(LKL_LIB):
 	$(MAKE) -C $(LKL_DIR)/tools/lkl ARCH=$(ARCH) CROSS_COMPILE="$(CROSS_COMPILE)"
 
