@@ -16,11 +16,23 @@ jobs:
       - name: Install toolchain and dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
+          sudo apt-get install -y build-essential git libelf-dev bison flex libssl-dev bc gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
+
+      - name: Ensure LKL build in lkl-cache
+        run: |
+          mkdir -p lkl-cache
+          if [ ! -f "lkl-cache/tools/lkl/lib/lkl.o" ]; then
+            git clone --depth 1 https://github.com/lkl/linux.git temp_lkl
+            mkdir -p lkl-cache/tools
+            rm -rf lkl-cache/tools/lkl
+            mv temp_lkl/tools/lkl lkl-cache/tools/lkl
+            rm -rf temp_lkl
+            make -C lkl-cache/tools/lkl ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
+          fi
 
       - name: Build blik for ARM64
         run: |
-          make CC=aarch64-linux-gnu-gcc ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
+          make CC=aarch64-linux-gnu-gcc ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LKL_DIR=lkl-cache
 
       - name: Upload compiled binary
         uses: actions/upload-artifact@v4
