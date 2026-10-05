@@ -62,6 +62,13 @@ void blik_run(void) {
         }
     }
 
+    long mnt_ret = lkl_sys_mount("hostfs", "/", "hostfs", 0, NULL);
+    if (mnt_ret < 0) {
+        fprintf(stderr, "[blik] warning: failed to mount hostfs: %ld\n", mnt_ret);
+    } else {
+        printf("[blik] host filesystem mounted successfully to /\n");
+    }
+
     while (1) {
         lkl_sys_pause();
     }
