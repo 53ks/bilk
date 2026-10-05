@@ -25,7 +25,10 @@ int blik_init(const char *config_path) {
         return -1;
     }
 
-    fread(buf, 1, len, f);
+    size_t read_len = fread(buf, 1, len, f);
+    if (read_len != (size_t)len) {
+        fprintf(stderr, "[blik] warning: did not read full config file\n");
+    }
     buf[len] = '\0';
     fclose(f);
 
