@@ -6,6 +6,7 @@
 #include <lkl.h>
 #include <lkl_host.h>
 #include <lkl/asm/unistd.h>
+#include <asm/unistd.h>
 
 int blik_init(const char *config_path) {
     printf("[blik] loading configuration from: %s\n", config_path);
