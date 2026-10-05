@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <lkl.h>
 #include <lkl_host.h>
+#include <lkl/asm/unistd.h>
 
 int blik_init(const char *config_path) {
     printf("[blik] loading configuration from: %s\n", config_path);
@@ -35,7 +36,6 @@ int blik_init(const char *config_path) {
     printf("[blik] config loaded (%ld bytes)\n", len);
     free(buf);
 
-    // LKLホストメモリの初期化 (LKLの正しいAPIシグネチャに合わせる)
     lkl_host_mem_init(128 * 1024 * 1024);
 
     return 0;
@@ -44,7 +44,6 @@ int blik_init(const char *config_path) {
 void blik_run(void) {
     printf("[blik] starting lkl kernel instance...\n");
 
-    // lkl_start_kernel の正しい引数 (コマンドライン文字列)
     long ret = lkl_start_kernel("mem=128M loglevel=8 ip=dhcp");
     if (ret < 0) {
         fprintf(stderr, "[blik] failed to start lkl kernel: %ld\n", ret);
@@ -53,12 +52,10 @@ void blik_run(void) {
 
     printf("[blik] lkl kernel started successfully\n");
 
-    // ネットワークデバイス作成 (オフロード引数などを追加して合わせる)
     struct lkl_netdev *nd = lkl_netdev_tap_create("tap0", 0);
     if (!nd) {
         fprintf(stderr, "[blik] failed to create tap netdev\n");
     } else {
-        // lkl_netdev_add の引数 (nd, args) に合わせる
         int id = lkl_netdev_add(nd, NULL);
         if (id < 0) {
             fprintf(stderr, "[blik] failed to add netdev to lkl: %d\n", id);
@@ -81,8 +78,7 @@ void blik_run(void) {
 
     long pid = lkl_sys_clone(LKL_CLONE_VM | LKL_CLONE_FS | LKL_CLONE_FILES | LKL_CLONE_SIGHAND, 0);
     if (pid == 0) {
-        // execve の型キャストまたは正しい型合わせ
-        lkl_sys_execve("/bin/sh", (char *const *)argv, (char *const *)envp);
+        lkl_sys_execve("/bin/sh", (const char *const *)argv, (const char *const *)envp);
         lkl_sys_exit(1);
     } else if (pid < 0) {
         fprintf(stderr, "[blik] failed to clone process: %ld\n", pid);
