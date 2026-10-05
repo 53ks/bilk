@@ -1,0 +1,33 @@
+name: Build blik
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Clone LKL
+        run: |
+          git clone --depth 1 https://github.com/lkl/linux.git lkl
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git libelf-dev bison flex libssl-dev bc
+
+      - name: Build blik
+        run: |
+          make
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: blik-binary
+          path: blik
