@@ -41,10 +41,14 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global http.postBuffer 524288000
+          git config --global http.lowSpeedLimit 1000
+          git config --global http.lowSpeedTime 300
+          
           git add lkl-cache/
           if ! git diff-index --quiet HEAD --; then
             git commit -m "chore: update lkl-cache with build artifacts [skip ci]"
-            git push
+            git push origin HEAD:${{ github.ref_name }}
           else
             echo "No changes in lkl-cache to commit."
           fi
