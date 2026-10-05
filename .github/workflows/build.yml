@@ -13,7 +13,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Clone LKL
+      - name: Cache LKL source and build
+        id: cache-lkl
+        uses: actions/cache@v4
+        with:
+          path: lkl
+          key: lkl-arm64-${{ hashFiles('lkl/tools/lkl/**') }}
+          restore-keys: |
+            lkl-arm64-
+
+      - name: Clone LKL if not cached
+        if: steps.cache-lkl.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 https://github.com/lkl/linux.git lkl
 
@@ -23,6 +33,7 @@ jobs:
           sudo apt-get install -y build-essential git libelf-dev bison flex libssl-dev bc gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
 
       - name: Build LKL for arm64
+        if: steps.cache-lkl.outputs.cache-hit != 'true'
         run: |
           cd lkl/tools/lkl
           make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
