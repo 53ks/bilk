@@ -2,11 +2,11 @@ CC ?= gcc
 ARCH ?= x86_64
 CROSS_COMPILE ?=
 
-LKL_DIR ?= lkl-cache
-LKL_LIB ?= $(LKL_DIR)/tools/lkl/lib/lkl.o
+LKL_DIR = lkl-cache
+LKL_LIB = $(LKL_DIR)/tools/lkl/lib/lkl.o
 
-CFLAGS ?= -O2 -Wall -Iinclude -I$(LKL_DIR)/tools/lkl/include
-LDFLAGS ?= -lpthread -ldl
+CFLAGS = -O2 -Wall -Iinclude -I$(LKL_DIR)/tools/lkl/include
+LDFLAGS = -lpthread -ldl
 
 TARGET = blik
 SRCS = src/main.c src/bridge.c
@@ -16,7 +16,6 @@ all: $(TARGET)
 
 $(LKL_LIB):
 	@if [ ! -f "$(LKL_LIB)" ]; then \
-		git clone --depth 1 https://github.com/lkl/linux.git $(LKL_DIR) || true; \
 		$(MAKE) -C $(LKL_DIR)/tools/lkl ARCH=$(ARCH) CROSS_COMPILE="$(CROSS_COMPILE)"; \
 	fi
 
