@@ -17,17 +17,22 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/lkl/linux.git lkl
 
-      - name: Install dependencies
+      - name: Install dependencies and toolchain
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential git libelf-dev bison flex libssl-dev bc
+          sudo apt-get install -y build-essential git libelf-dev bison flex libssl-dev bc gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
 
-      - name: Build blik
+      - name: Build LKL for arm64
         run: |
-          make
+          cd lkl/tools/lkl
+          make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
+
+      - name: Build blik binary for arm64
+        run: |
+          make CC=aarch64-linux-gnu-gcc ARCH=arm64 LKL_DIR=lkl
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: blik-binary
+          name: blik-binary-arm64
           path: blik
