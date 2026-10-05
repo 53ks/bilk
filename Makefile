@@ -2,11 +2,11 @@ CC ?= gcc
 ARCH ?= x86_64
 CROSS_COMPILE ?=
 
-LKL_DIR = lkl-cache
-LKL_LIB = $(LKL_DIR)/tools/lkl/lib/lkl.o
+LKL_DIR ?= lkl-cache
+LKL_LIB ?= $(LKL_DIR)/tools/lkl/lib/lkl.o
 
-CFLAGS = -O2 -Wall -Iinclude -I$(LKL_DIR)/tools/lkl/include
-LDFLAGS = -lpthread -ldl
+CFLAGS ?= -O2 -Wall -Iinclude -I$(LKL_DIR)/tools/lkl/include
+LDFLAGS ?= -lpthread -ldl
 
 TARGET = blik
 SRCS = src/main.c src/bridge.c
@@ -15,9 +15,14 @@ OBJS = $(SRCS:.c=.o)
 all: $(TARGET)
 
 $(LKL_LIB):
-	@if [ ! -f "$(LKL_LIB)" ]; then \
-		$(MAKE) -C $(LKL_DIR)/tools/lkl ARCH=$(ARCH) CROSS_COMPILE="$(CROSS_COMPILE)"; \
+	mkdir -p $(LKL_DIR)
+	if [ ! -d "$(LKL_DIR)/tools/lkl" ]; then \
+		git clone --depth 1 https://github.com/lkl/linux.git temp_lkl; \
+		mkdir -p $(LKL_DIR)/tools; \
+		mv temp_lkl/tools/lkl $(LKL_DIR)/tools/lkl; \
+		rm -rf temp_lkl; \
 	fi
+	$(MAKE) -C $(LKL_DIR)/tools/lkl ARCH=$(ARCH) CROSS_COMPILE="$(CROSS_COMPILE)"
 
 $(OBJS): $(LKL_LIB)
 
