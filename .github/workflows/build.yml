@@ -1,4 +1,4 @@
-name: Build blik
+name: Build blik (ARM64)
 
 on:
   push:
@@ -12,38 +12,34 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      - name: Check if lkl-cache exists
-        id: check-lkl-cache
+      - name: Check if lkl-cache exists and has content
+        id: check-cache
         run: |
           if [ -d "lkl-cache/tools/lkl" ]; then
-            echo "cache_exists=true" >> $GITHUB_OUTPUT
+            echo "exists=true" >> $GITHUB_OUTPUT
           else
-            echo "cache_exists=false" >> $GITHUB_OUTPUT
+            echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Clone LKL if cache not exists
-        if: steps.check-lkl-cache.outputs.cache_exists != 'true'
+      - name: Clone LKL into lkl-cache if not present
+        if: steps.check-cache.outputs.exists != 'true'
         run: |
           git clone --depth 1 https://github.com/lkl/linux.git lkl-cache
 
-      - name: Install dependencies and toolchain
+      - name: Install toolchain and dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential git libelf-dev bison flex libssl-dev bc gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
 
-      - name: Build LKL for arm64
-        if: steps.check-lkl-cache.outputs.cache_exists != 'true'
+      - name: Build blik for ARM64
         run: |
-          cd lkl-cache/tools/lkl
-          make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
+          make CC=aarch64-linux-gnu-gcc ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LKL_DIR=lkl-cache
 
-      - name: Build blik binary for arm64
-        run: |
-          make CC=aarch64-linux-gnu-gcc ARCH=arm64 LKL_DIR=lkl-cache
-
-      - name: Upload artifact
+      - name: Upload compiled binary
         uses: actions/upload-artifact@v4
         with:
-          name: blik-binary-arm64
+          name: blik-arm64
           path: blik
