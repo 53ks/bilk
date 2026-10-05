@@ -1,9 +1,12 @@
 CC ?= gcc
+ARCH ?= x86_64
+CROSS_COMPILE ?=
+
+LKL_DIR ?= lkl-cache
+LKL_LIB ?= $(LKL_DIR)/tools/lkl/lib/liblkl.a
+
 CFLAGS ?= -O2 -Wall -Iinclude -I$(LKL_DIR)/tools/lkl/include
 LDFLAGS ?= -lpthread -ldl
-
-LKL_DIR ?= lkl
-LKL_LIB ?= $(LKL_DIR)/tools/lkl/lib/liblkl.a
 
 TARGET = blik
 SRCS = src/main.c src/bridge.c
@@ -11,8 +14,9 @@ OBJS = $(SRCS:.c=.o)
 
 all: $(TARGET)
 
+# LKLのビルド時にクロスコンパイル設定とアーキテクチャを正確に渡す
 $(LKL_LIB):
-	$(MAKE) -C $(LKL_DIR)/tools/lkl
+	$(MAKE) -C $(LKL_DIR)/tools/lkl ARCH=$(ARCH) CROSS_COMPILE="$(CROSS_COMPILE)"
 
 $(TARGET): $(OBJS) $(LKL_LIB)
 	$(CC) $(OBJS) $(LKL_LIB) $(LDFLAGS) -o $(TARGET)
