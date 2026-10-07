@@ -21,8 +21,7 @@ jobs:
       - name: Build LKL in lkl-cache
         run: |
           git clone --depth 1 https://github.com/lkl/linux.git temp_lkl
-          make -C temp_lkl/tools/lkl ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- INSTALL_PATH=$(pwd)/temp_lkl/tools/lkl/
-          make -C temp_lkl/tools/lkl ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- install INSTALL_PATH=$(pwd)/temp_lkl/tools/lkl/
+          make -C temp_lkl/tools/lkl ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
           
           mkdir -p lkl-cache/tools/lkl/lib
           mkdir -p lkl-cache/tools/lkl/include
