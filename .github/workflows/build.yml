@@ -27,7 +27,7 @@ jobs:
           mkdir -p lkl-cache/tools/lkl/include
           
           cp -r temp_lkl/tools/lkl/include/* lkl-cache/tools/lkl/include/
-          find temp_lkl/tools/lkl -name "lkl.o" -exec cp {} lkl-cache/tools/lkl/lib/ \;
+          cp temp_lkl/tools/lkl/lib/*.o lkl-cache/tools/lkl/lib/ || true
           
           rm -rf temp_lkl
 
