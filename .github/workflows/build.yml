@@ -23,9 +23,7 @@ jobs:
           mkdir -p lkl-cache
           git clone --depth 1 https://github.com/lkl/linux.git temp_lkl
           make -C temp_lkl/tools/lkl ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
-          rm -rf lkl-cache/tools/lkl
-          mkdir -p lkl-cache/tools
-          mv temp_lkl/tools/lkl lkl-cache/tools/lkl
+          make -C temp_lkl/tools/lkl ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- install INSTALL_PATH=$(pwd)/lkl-cache/tools/lkl/
           rm -rf temp_lkl
 
       - name: Build blik for ARM64
