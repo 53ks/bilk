@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <lkl.h>
 #include <lkl_host.h>
-#include <lkl/syscalls.h>
 #include <lkl/asm/unistd.h>
 #include <asm/unistd.h>
 
