@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <lkl.h>
 #include <lkl_host.h>
+#include <lkl/syscalls.h>
 #include <lkl/asm/unistd.h>
 #include <asm/unistd.h>
 
@@ -37,15 +38,13 @@ int blik_init(const char *config_path) {
     printf("[blik] config loaded (%ld bytes)\n", len);
     free(buf);
 
-    lkl_host_mem_init(128 * 1024 * 1024);
-
     return 0;
 }
 
 void blik_run(void) {
     printf("[blik] starting lkl kernel instance...\n");
 
-    long ret = lkl_start_kernel("mem=128M loglevel=8 ip=dhcp");
+    long ret = lkl_start_kernel(&lkl_host_ops, "mem=128M loglevel=8 ip=dhcp");
     if (ret < 0) {
         fprintf(stderr, "[blik] failed to start lkl kernel: %ld\n", ret);
         return;
