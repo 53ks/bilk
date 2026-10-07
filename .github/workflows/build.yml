@@ -18,7 +18,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential git libelf-dev bison flex libssl-dev bc gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
 
-      - name: Build LKL in lkl-cache
+      - name: Build LKL and create liblkl.a
         run: |
           git clone --depth 1 https://github.com/lkl/linux.git temp_lkl
           make -C temp_lkl/tools/lkl ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
@@ -27,8 +27,12 @@ jobs:
           mkdir -p lkl-cache/tools/lkl/include
           
           cp -r temp_lkl/tools/lkl/include/* lkl-cache/tools/lkl/include/
-          cp temp_lkl/tools/lkl/lib/*.o lkl-cache/tools/lkl/lib/ || true
           
+          cd temp_lkl/tools/lkl/lib
+          aarch64-linux-gnu-ar rcs liblkl.a *.o
+          cp liblkl.a /home/runner/work/blik/blik/lkl-cache/tools/lkl/lib/
+          
+          cd /home/runner/work/blik/blik
           rm -rf temp_lkl
 
       - name: Build blik for ARM64
