@@ -1,26 +1,42 @@
-CC ?= gcc
-ARCH ?= x86_64
-CROSS_COMPILE ?=
+name: Build blik (ARM64)
 
-LKL_DIR ?= lkl-cache
-LKL_LIB ?= $(LKL_DIR)/tools/lkl/lib/lkl.o
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
-CFLAGS ?= -O2 -Wall -Iinclude -I$(LKL_DIR)/tools/lkl/include -I$(LKL_DIR)/tools/lkl/include/lkl
-LDFLAGS ?= -lpthread -ldl -lrt
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-TARGET = blik
-SRCS = src/main.c src/bridge.c
-OBJS = $(SRCS:.c=.o)
+      - name: Install toolchain and dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git libelf-dev bison flex libssl-dev bc gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
 
-all: $(TARGET)
+      - name: Build LKL in lkl-cache
+        run: |
+          git clone --depth 1 https://github.com/lkl/linux.git temp_lkl
+          make -C temp_lkl/tools/lkl ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
+          
+          mkdir -p lkl-cache/tools/lkl/lib
+          mkdir -p lkl-cache/tools/lkl/include
+          
+          cp -r temp_lkl/tools/lkl/include/* lkl-cache/tools/lkl/include/
+          find temp_lkl/tools/lkl -name "lkl.o" -exec cp {} lkl-cache/tools/lkl/lib/ \;
+          
+          rm -rf temp_lkl
 
-$(TARGET): $(OBJS) $(LKL_LIB)
-	$(CC) $(OBJS) $(LKL_LIB) $(LDFLAGS) -o $(TARGET)
+      - name: Build blik for ARM64
+        run: |
+          make CC=aarch64-linux-gnu-gcc ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LKL_DIR=lkl-cache
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-clean:
-	rm -f $(OBJS) $(TARGET)
-
-.PHONY: all clean
+      - name: Upload compiled binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: blik-arm64
+          path: blik
