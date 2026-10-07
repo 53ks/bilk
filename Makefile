@@ -3,10 +3,10 @@ ARCH ?= x86_64
 CROSS_COMPILE ?=
 
 LKL_DIR ?= lkl-cache
-LKL_LIBS = $(wildcard $(LKL_DIR)/tools/lkl/lib/*.o)
+LKL_LIB ?= $(LKL_DIR)/tools/lkl/lib/liblkl.a
 
 CFLAGS ?= -O2 -Wall -Iinclude -I$(LKL_DIR)/tools/lkl/include -I$(LKL_DIR)/tools/lkl/include/lkl
-LDFLAGS ?= $(LKL_LIBS) -lpthread -ldl -lrt
+LDFLAGS ?= $(LKL_LIB) -lpthread -ldl -lrt
 
 TARGET = blik
 SRCS = src/main.c src/bridge.c
