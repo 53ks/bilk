@@ -43,7 +43,7 @@ int blik_init(const char *config_path) {
 void blik_run(void) {
     printf("[blik] starting lkl kernel instance...\n");
 
-    long ret = lkl_start_kernel(&lkl_host_ops, "mem=128M loglevel=8 ip=dhcp");
+    long ret = lkl_start_kernel("mem=128M loglevel=8 ip=dhcp");
     if (ret < 0) {
         fprintf(stderr, "[blik] failed to start lkl kernel: %ld\n", ret);
         return;
@@ -75,7 +75,7 @@ void blik_run(void) {
     char *const argv[] = { "/bin/sh", NULL };
     char *const envp[] = { "PATH=/bin:/usr/bin:/sbin:/usr/sbin", "TERM=linux", NULL };
 
-    long pid = lkl_sys_clone(LKL_CLONE_VM | LKL_CLONE_FS | LKL_CLONE_FILES | LKL_CLONE_SIGHAND, 0);
+    long pid = lkl_syscall(__lkl__NR_clone, LKL_CLONE_VM | LKL_CLONE_FS | LKL_CLONE_FILES | LKL_CLONE_SIGHAND, 0);
     if (pid == 0) {
         lkl_sys_execve("/bin/sh", (const char *const *)argv, (const char *const *)envp);
         lkl_sys_exit(1);
